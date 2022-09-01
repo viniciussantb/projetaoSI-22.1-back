@@ -26,14 +26,29 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Installation
+## Pre-requisites
 
-```bash
-$ npm install
-```
+To run the application in your machine you must have the following tools:
+* [Git](https://git-scm.com/book/pt-br/v2/Come%C3%A7ando-Instalando-o-Git)
+* [Node.js](https://nodejs.org/pt-br/download/package-manager/) 
+* [Docker](https://www.docker.com/) (if you don't have a local postgres connection)
 
 ## Running the app
 
+Clone the repository and follow the comands bellow
+
+If you don't have a local postgres database, run the postgres docker image (recommended) and start a database: 
+```bash
+# Run the docker image of postgres
+$ docker run --name projetao -e POSTGRES_PASSWORD=password -e POSTGRES_DB=projetao -e POSTGRES_USER=user -p 5432:5432 -d postgres
+```
+Setup your environment variables (creating the ```.env``` file) according to the database connection config (example in ```.env.example``)
+
+Install the dependencies
+```bash
+$ npm install
+```
+Then run the application
 ```bash
 # development
 $ npm run start
@@ -57,17 +72,3 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
