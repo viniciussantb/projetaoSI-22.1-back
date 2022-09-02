@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/swagger';
+import { IsNumber, IsNotEmpty } from 'class-validator';
 import { CreateClientDto } from './create-client.dto';
+import { ApiProperty, ApiTags } from '@nestjs/swagger';
 
-export class UpdateClientDto extends PartialType(CreateClientDto) {}
+@ApiTags('UpdateClientDto')
+export class UpdateClientDto extends CreateClientDto {
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty({ name: 'id', type: Number })
+  id!: number;
+}
