@@ -17,7 +17,7 @@ import { PriceHistory } from "../../price-history/entities/price-history.entity"
 @Entity({ name: 'marketProduct' })
 export class MarketProduct {
   @ApiProperty({ name: 'id', type: Number })
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id!: number;
 
   @ApiProperty({ name: 'quantity', type: Number })

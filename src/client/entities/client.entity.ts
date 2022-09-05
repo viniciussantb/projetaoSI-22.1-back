@@ -6,7 +6,7 @@ import { ProductSelectionLog } from "../../product-selection-log/entities/produc
 @Entity({ name: 'client' })
 export class Client {
   @ApiProperty({ name: 'id', type: Number })
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id!: number;
 
   @ApiProperty({ name: 'name', type: String })

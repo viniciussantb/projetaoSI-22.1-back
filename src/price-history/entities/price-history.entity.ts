@@ -6,7 +6,7 @@ import { MarketProduct } from "../../market-product/entities/market-product.enti
 @Entity({ name: 'priceHistory' })
 export class PriceHistory {
   @ApiProperty({ name: 'id', type: Number })
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id!: number;
 
   @ApiProperty({ name: 'marketProduct', type: MarketProduct })

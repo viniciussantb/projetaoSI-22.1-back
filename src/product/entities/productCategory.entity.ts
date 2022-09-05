@@ -13,7 +13,7 @@ import { Category } from "../../category/entities/category.entity";
 @Entity({ name: 'productCategory' })
 export class ProductCategory {
   @ApiProperty({ name: 'id', type: Number })
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id!: number;
   
   @ApiProperty({ name: 'product', type: Product })

@@ -11,10 +11,10 @@ import { Client } from "../../client/entities/client.entity";
 import { MarketProduct } from "../../market-product/entities/market-product.entity";
 
 @ApiTags('Product Selection Log')
-@Entity({ name: 'ProductSelectionLog' })
+@Entity({ name: 'productSelectionLog' })
 export class ProductSelectionLog {
   @ApiProperty({ name: 'id', type: Number })
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id!: number;
 
   @ApiProperty({ name: 'client', type: Client })

@@ -10,7 +10,7 @@ import { MarketProduct } from "../../market-product/entities/market-product.enti
 @ApiTags('Market')
 @Entity({ name: 'market' })
 export class Market {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   @ApiProperty({ name: 'id', type: Number })
   id!: number;
 
