@@ -6,6 +6,7 @@ import {
  } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { MarketProduct } from "src/market-product/entities/market-product.entity";
+import { ProductCategory } from "./productCategory.entity";
 
 @ApiTags('Product')
 @Entity({ name: 'product' })
@@ -29,4 +30,8 @@ export class Product {
   @ApiProperty({ name: 'marketProduct', type: MarketProduct, nullable: true })
   @OneToMany(() => MarketProduct, (marketProduct) => marketProduct.product)
   marketProduct?: MarketProduct[];
+
+  @ApiProperty({ name: 'productCategory', type: ProductCategory, nullable: true })
+  @OneToMany(() => ProductCategory, (productCategory) => productCategory.product)
+  productCategory?: ProductCategory[];
 }
