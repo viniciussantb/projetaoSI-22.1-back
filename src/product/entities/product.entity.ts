@@ -2,10 +2,12 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne
+  ManyToOne,
+  OneToMany,
  } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { Category } from "src/category/entities/category.entity";
+import { MarketProduct } from "src/market-product/entities/market-product.entity";
 
 @ApiTags('Product')
 @Entity({ name: 'product' })
@@ -29,4 +31,8 @@ export class Product {
   @ApiProperty({ name: 'category', type: Category })
   @ManyToOne(() => Category, (category) => category.product)
   category!: Category;
+
+  @ApiProperty({ name: 'marketProduct', type: MarketProduct, nullable: true })
+  @OneToMany(() => MarketProduct, (marketProduct) => marketProduct.product)
+  marketProduct?: MarketProduct[];
 }

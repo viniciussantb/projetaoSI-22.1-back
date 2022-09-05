@@ -1,4 +1,11 @@
-import { PartialType } from '@nestjs/swagger';
+import { ApiProperty, ApiTags, PartialType } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 import { CreateMarketProductDto } from './create-market-product.dto';
 
-export class UpdateMarketProductDto extends PartialType(CreateMarketProductDto) {}
+@ApiTags('Update market product Dto')
+export class UpdateMarketProductDto extends CreateMarketProductDto {
+  @IsNotEmpty()
+  @IsNumber()
+  @ApiProperty({ name: 'id', type: Number })
+  id!: number;
+}

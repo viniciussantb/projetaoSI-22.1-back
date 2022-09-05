@@ -1,5 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToMany,
+} from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
+import { MarketProduct } from "src/market-product/entities/market-product.entity";
 
 @ApiTags('Market')
 @Entity({ name: 'market' })
@@ -43,4 +49,8 @@ export class Market {
   @ApiProperty({ name: 'cep', type: String })
   @Column({ name: 'cep', type: String })
   cep!: string;
+
+  @ApiProperty({ name: 'marketProduct', type: MarketProduct })
+  @OneToMany(() => MarketProduct, (marketProduct) => marketProduct.market)
+  marketProduct?: MarketProduct[];
 }
