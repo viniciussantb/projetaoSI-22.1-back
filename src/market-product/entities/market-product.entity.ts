@@ -4,14 +4,16 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
+  OneToMany,
  } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { Product } from "src/product/entities/product.entity";
 import { Market } from "src/market/entities/market.entity";
+import { ProductSelectionLog } from "src/product-selection-log/entities/product-selection-log.entity";
 
 @ApiTags('Market Product')
-@Entity({ name: 'market Product' })
+@Entity({ name: 'marketProduct' })
 export class MarketProduct {
   @ApiProperty({ name: 'id', type: Number })
   @PrimaryGeneratedColumn('uuid')
@@ -40,6 +42,10 @@ export class MarketProduct {
   @ApiProperty({ name: 'market', type: Market })
   @ManyToOne(() => Market, (market) => market.marketProduct)
   market!: Market;
+
+  @ApiProperty({ name: 'productSelectionLog', type: ProductSelectionLog })
+  @OneToMany(() => ProductSelectionLog, (productSelectionLog) => productSelectionLog.marketProduct)
+  productSelectionLog?: ProductSelectionLog[];
 
   @CreateDateColumn({ name: 'createdAt' })
   createdAt!: Date;

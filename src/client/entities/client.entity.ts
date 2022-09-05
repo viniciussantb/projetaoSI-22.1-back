@@ -1,5 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
+import { ProductSelectionLog } from "src/product-selection-log/entities/product-selection-log.entity";
 
 @ApiTags('Client')
 @Entity({ name: 'client' })
@@ -11,7 +12,6 @@ export class Client {
   @ApiProperty({ name: 'name', type: String })
   @Column({ name: 'name', type: String })
   name!: string;
-
 
   @ApiProperty({ name: 'nickname', type: String })
   @Column({ name: 'nickname', type: String })
@@ -28,4 +28,8 @@ export class Client {
   @ApiProperty({ name: 'receiveEmail', type: Boolean })
   @Column({ name: 'receiveEmail', type: Boolean })
   receiveEmail!: boolean;
+
+  @ApiProperty({ name: 'productSelectionLog', type: ProductSelectionLog, nullable: true })
+  @OneToMany(() => ProductSelectionLog, (productSelectionLog) => productSelectionLog.client)
+  productSelectionLog?: ProductSelectionLog[];
 }
