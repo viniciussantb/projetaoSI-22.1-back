@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany, ManyToOne, CreateDateColumn, UpdateDateColumn } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { MarketProduct } from "src/market-product/entities/market-product.entity";
+import { MarketProduct } from "../../market-product/entities/market-product.entity";
 
 @ApiTags('Price History')
 @Entity({ name: 'priceHistory' })

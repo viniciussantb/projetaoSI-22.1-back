@@ -8,10 +8,10 @@ import {
   OneToMany,
  } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { Product } from "src/product/entities/product.entity";
-import { Market } from "src/market/entities/market.entity";
-import { ProductSelectionLog } from "src/product-selection-log/entities/product-selection-log.entity";
-import { PriceHistory } from "src/price-history/entities/price-history.entity";
+import { Product } from "../../product/entities/product.entity";
+import { Market } from "../../market/entities/market.entity";
+import { ProductSelectionLog } from "../../product-selection-log/entities/product-selection-log.entity";
+import { PriceHistory } from "../../price-history/entities/price-history.entity";
 
 @ApiTags('Market Product')
 @Entity({ name: 'marketProduct' })

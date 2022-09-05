@@ -6,9 +6,8 @@ import {
   ManyToOne,
  } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { MarketProduct } from "src/market-product/entities/market-product.entity";
 import { Product } from "./product.entity";
-import { Category } from "src/category/entities/category.entity";
+import { Category } from "../../category/entities/category.entity";
 
 @ApiTags('Product Category')
 @Entity({ name: 'productCategory' })

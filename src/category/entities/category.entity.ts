@@ -5,8 +5,7 @@ import {
   OneToMany,
 } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { Product } from "src/product/entities/product.entity";
-import { ProductCategory } from "src/product/entities/productCategory.entity";
+import { ProductCategory } from "../../product/entities/productCategory.entity";
 
 @ApiTags('Category')
 @Entity({ name: 'category' })
@@ -23,7 +22,7 @@ export class Category {
   @Column({ name: 'name', type: String })
   name!: string;
 
-  @ApiProperty({ name: 'description', type: Product, nullable: true })
+  @ApiProperty({ name: 'description', type: String, nullable: true })
   @Column({ name: 'description', type: String, nullable: true })
   description?: string
 }

@@ -7,8 +7,8 @@ import {
   UpdateDateColumn
  } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { Client } from "src/client/entities/client.entity";
-import { MarketProduct } from "src/market-product/entities/market-product.entity";
+import { Client } from "../../client/entities/client.entity";
+import { MarketProduct } from "../../market-product/entities/market-product.entity";
 
 @ApiTags('Product Selection Log')
 @Entity({ name: 'ProductSelectionLog' })

@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { ProductSelectionLog } from "src/product-selection-log/entities/product-selection-log.entity";
+import { ProductSelectionLog } from "../../product-selection-log/entities/product-selection-log.entity";
 
 @ApiTags('Client')
 @Entity({ name: 'client' })
