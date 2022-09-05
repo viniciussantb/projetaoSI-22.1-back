@@ -7,9 +7,10 @@ import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
 import { ProductSelectionLogModule } from './product-selection-log/product-selection-log.module';
 import { MarketProductModule } from './market-product/market-product.module';
+import { PriceHistoryModule } from './price-history/price-history.module';
 
 @Module({
-  imports: [ClientModule, MarketModule, CategoryModule, ProductModule, ProductSelectionLogModule, MarketProductModule],
+  imports: [ClientModule, MarketModule, CategoryModule, ProductModule, ProductSelectionLogModule, MarketProductModule, PriceHistoryModule],
   controllers: [AppController],
   providers: [AppService],
 })
