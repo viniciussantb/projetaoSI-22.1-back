@@ -11,6 +11,7 @@ import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { Product } from "src/product/entities/product.entity";
 import { Market } from "src/market/entities/market.entity";
 import { ProductSelectionLog } from "src/product-selection-log/entities/product-selection-log.entity";
+import { PriceHistory } from "src/price-history/entities/price-history.entity";
 
 @ApiTags('Market Product')
 @Entity({ name: 'marketProduct' })
@@ -46,6 +47,10 @@ export class MarketProduct {
   @ApiProperty({ name: 'productSelectionLog', type: ProductSelectionLog })
   @OneToMany(() => ProductSelectionLog, (productSelectionLog) => productSelectionLog.marketProduct)
   productSelectionLog?: ProductSelectionLog[];
+
+  @ApiProperty({ name: 'priceHistory', type: PriceHistory })
+  @OneToMany(() => PriceHistory, (priceHistory) => priceHistory.marketProduct)
+  priceHistory?: PriceHistory[];
 
   @CreateDateColumn({ name: 'createdAt' })
   createdAt!: Date;
