@@ -5,9 +5,10 @@ import { ClientModule } from './client/client.module';
 import { MarketModule } from './market/market.module';
 import { CategoryModule } from './category/category.module';
 import { ProductModule } from './product/product.module';
+import { ProductSelectionLogModule } from './product-selection-log/product-selection-log.module';
 
 @Module({
-  imports: [ClientModule, MarketModule, CategoryModule, ProductModule],
+  imports: [ClientModule, MarketModule, CategoryModule, ProductModule, ProductSelectionLogModule],
   controllers: [AppController],
   providers: [AppService],
 })
