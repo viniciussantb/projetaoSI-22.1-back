@@ -2,7 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { PriceHistoryService } from './price-history.service';
 import { CreatePriceHistoryDto } from './dto/create-price-history.dto';
 import { UpdatePriceHistoryDto } from './dto/update-price-history.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Price-History')
 @Controller('price-history')
 export class PriceHistoryController {
   constructor(private readonly priceHistoryService: PriceHistoryService) {}
