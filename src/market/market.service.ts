@@ -1,26 +1,61 @@
 import { Injectable } from '@nestjs/common';
+import { AppDataSource } from '../app.data-source';
 import { CreateMarketDto } from './dto/create-market.dto';
 import { UpdateMarketDto } from './dto/update-market.dto';
+import { Market } from './entities/market.entity';
 
 @Injectable()
 export class MarketService {
-  create(createMarketDto: CreateMarketDto) {
-    return 'This action adds a new market';
+  async create(createMarketDto: CreateMarketDto) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .insert()
+      .into(Market)
+      .values(createMarketDto)
+      .execute();
   }
 
-  findAll() {
-    return `This action returns all market`;
+  async findAll() {
+    return await AppDataSource
+    .createQueryBuilder()
+    .select('m')
+    .from(Market, 'm')
+    .getMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} market`;
+  async findOne(id: number) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .select('m')
+      .from(Market, 'm')
+      .where('m.id=:marketId', { marketId: id })
+      .getOne();
   }
 
-  update(id: number, updateMarketDto: UpdateMarketDto) {
-    return `This action updates a #${id} market`;
+  async findByNeighborhood(neighborhood: string) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .select('m')
+      .from(Market, 'm')
+      .where('m.neighborhood=:marketNeighborhood', { marketNeighborhood: neighborhood })
+      .getMany();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} market`;
+  async update(updateMarketDto: UpdateMarketDto) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .update(Market)
+      .set(updateMarketDto)
+      .where('id=:marketId', { marketId: updateMarketDto.id })
+      .execute();
+  }
+
+  async remove(id: number) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .delete()
+      .from(Market)
+      .where('id=:marketId', { marketId: id })
+      .execute();
   }
 }
