@@ -47,6 +47,7 @@ export class ClientService {
       .createQueryBuilder()
       .update(Client)
       .set(updateClientDto)
+      .where('id=:clientId', { clientId: updateClientDto.id })
       .execute();
   }
 
