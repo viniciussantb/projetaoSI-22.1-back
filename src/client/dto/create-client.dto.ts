@@ -15,6 +15,11 @@ nickname!: string;
 
 @IsString()
 @IsNotEmpty()
+@ApiProperty({ name: 'neighborhood', type: String  })
+neighborhood!: string;
+
+@IsString()
+@IsNotEmpty()
 @ApiProperty({ name: 'email', type: String  })
 email!: string;
 

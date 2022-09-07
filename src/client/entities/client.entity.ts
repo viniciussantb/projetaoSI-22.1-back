@@ -17,6 +17,10 @@ export class Client {
   @Column({ name: 'nickname', type: String })
   nickname!: string;
 
+  @ApiProperty({ name: 'neighborhood', type: String })
+  @Column({ name: 'neighborhood', type: String })
+  neighborhood!: string;
+
   @ApiProperty({ name: 'email', type: String })
   @Column({ name: 'email', type: String })
   email!: string;
