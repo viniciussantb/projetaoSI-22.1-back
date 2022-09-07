@@ -1,16 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { AppDataSource } from '../app.data-source';
+import { Category } from './entities/category.entity';
 
 @Injectable()
 export class CategoryService {
-  findAll() {
-    return `This action returns all category`;
+  async findAll() {
+    return await AppDataSource
+      .createQueryBuilder()
+      .select('c')
+      .from(Category, 'c')
+      .getMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+  async findOne(id: number) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .select('c')
+      .from(Category, 'c')
+      .where('c.id=:categoryId', { categoryId: id })
+      .getOne();
   }
 }
