@@ -17,10 +17,14 @@ export class ProductCategory {
   id!: number;
   
   @ApiProperty({ name: 'product', type: Product })
-  @ManyToOne(() => Product, (product) => product.productCategory)
+  @ManyToOne(() => Product, (product) => product.productCategory, {
+    cascade: ['remove'],
+  })
   product!: Product;
 
   @ApiProperty({ name: 'category', type: Category })
-  @ManyToOne(() => Category, (category) => category.productCategory)
+  @ManyToOne(() => Category, (category) => category.productCategory, {
+    cascade: ['remove'],
+  })
   category!: Category;
 }

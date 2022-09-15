@@ -1,10 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Res } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiProperty, ApiTags } from '@nestjs/swagger';
 import { Product } from './entities/product.entity';
 import { Response } from 'express';
+import { CreateProductCategoryDto } from './dto/create-product-category.dto';
+import { ProductCategory } from './entities/productCategory.entity';
+import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 
 @ApiTags('Product')
 @Controller('product')
@@ -17,15 +20,27 @@ export class ProductController {
     @Res() res: Response
     ) {
     const product =  await this.productService.create(createProductDto);
-    if (product instanceof Product) {
-      return res.status(200).send(product);
+    if (!(product instanceof Object)) {
+      return res.status(400).send({ message: product });
     }
-    return res.status(400).send({ message: product });
+    return res.status(200).send(product);
+  }
+
+  @Post('/category')
+  async createProductCategory(
+    @Body() createProductCategoryDto: CreateProductCategoryDto,
+    @Res() res: Response
+    ) {
+      const productCategory =  await this.productService.createProductCategory(createProductCategoryDto);
+      if (!(productCategory instanceof Object)) {
+        return res.status(400).send({ message: productCategory });
+      }
+      return res.status(200).send(productCategory);
   }
 
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  async findAll() {
+    return await this.productService.findAll();
   }
 
   @Get(':id')
@@ -33,13 +48,29 @@ export class ProductController {
     return this.productService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @Put()
+  update(@Body() updateProductDto: UpdateProductDto) {
+    return this.productService.update(updateProductDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return await this.productService.remove(+id);
+  }
+
+  @Put('/category')
+  async updateProductCategory(
+    @Res() res: Response,
+    @Body() updateProductCategoryDto: UpdateProductCategoryDto) {
+      const productCategoryUpdated = await this.productService.updateProductCategory(updateProductCategoryDto);
+      console.log(productCategoryUpdated);
+      if (!(productCategoryUpdated instanceof Object)) 
+        return res.status(400).send({ message: productCategoryUpdated })
+      return res.status(200).send({ message: productCategoryUpdated })
+    }
+  
+  @Delete('/cateogory/:id')
+  async removeProductCategory(@Param('id') id: string) {
+    return await this.productService.removeProductCategory(+id);
   }
 }

@@ -5,9 +5,29 @@ import { AppDataSource } from '../app.data-source';
 import { Product } from './entities/product.entity';
 import { Category } from '../category/entities/category.entity';
 import { ProductCategory } from './entities/productCategory.entity';
+import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
+import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 
 @Injectable()
 export class ProductService {
+  async checkIfProductExists(id: number) {
+    return await AppDataSource
+    .createQueryBuilder()
+    .select('p')
+    .from(Product, 'p')
+    .where('p.id=:productId', { productId: id })
+    .getOne();
+  }
+
+  async checkIfCategoryExists(id: number) {
+    return await AppDataSource
+    .createQueryBuilder()
+    .select('p')
+    .from(Category, 'p')
+    .where('p.id=:categoryId', { categoryId: id })
+    .getOne();
+  }
+
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.startTransaction();
@@ -47,19 +67,90 @@ export class ProductService {
     }
   }
 
-  findAll() {
-    return `This action returns all product`;
+  async createProductCategory(createProductCategoryDto: CreateProductCategoryDto) {
+    const product = await this.checkIfProductExists(createProductCategoryDto.productId);
+
+    const category = await this.checkIfCategoryExists(createProductCategoryDto.categoryId);
+
+    if (!product || !category) return 'Error to insert ProductCategory. Product or Category does not exist.'
+
+    const productCategory = new ProductCategory();
+    productCategory.product = product;
+    productCategory.category = category;
+
+    return await AppDataSource
+    .createQueryBuilder()
+    .insert()
+    .into(ProductCategory)
+    .values(productCategory)
+    .execute();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
+  async findAll() {
+    return await AppDataSource
+      .createQueryBuilder()
+      .select('p')
+      .from(Product, 'p')
+      .leftJoinAndSelect('p.productCategory', 'pc')
+      .leftJoinAndSelect('pc.category', 'c')
+      .getMany();
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async findOne(id: number) {
+    return await AppDataSource
+    .createQueryBuilder()
+    .select('p')
+    .from(Product, 'p')
+    .leftJoinAndSelect('p.productCategory', 'pc')
+    .leftJoinAndSelect('pc.category', 'c')
+    .where('p.id=:productId', { productId: id })
+    .getOne();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async update(updateProductDto: UpdateProductDto) {
+    return await AppDataSource
+    .createQueryBuilder()
+    .update(Product)
+    .set(updateProductDto)
+    .where('id=:productId', { productId: updateProductDto.id })
+    .execute();
+  }
+
+  async updateProductCategory(updateProductCategoryDto: UpdateProductCategoryDto) {
+    const product = await this.checkIfProductExists(updateProductCategoryDto.productId);
+    const category = await this.checkIfCategoryExists(updateProductCategoryDto.categoryId);
+
+    if (!product || !category) {
+      return 'Error to update ProductCategory. Product or Category does not exist';
+    }
+
+    const productCategory = new ProductCategory();
+    productCategory.product = product;
+    productCategory.category = category;
+
+    return await AppDataSource
+    .createQueryBuilder()
+    .update(ProductCategory)
+    .set(productCategory)
+    .where('id=:productCategoryId', { productCategoryId: updateProductCategoryDto.id })
+    .execute();
+  }
+
+  async remove(id: number) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .delete()
+      .from(Product)
+      .where('id=:productId', { productId: id })
+      .execute();
+  }
+
+  async removeProductCategory(id: number) {
+    await AppDataSource
+    .createQueryBuilder()
+    .delete()
+    .from(ProductCategory)
+    .where('id=:productCategoryId', { productCategoryId: id })
+    .execute();
   }
 }
