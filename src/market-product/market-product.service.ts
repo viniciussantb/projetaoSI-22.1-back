@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMarketProductDto } from './dto/create-market-product.dto';
 import { UpdateMarketProductDto } from './dto/update-market-product.dto';
-import { checkIfMarketExists, checkIfProductExists } from 'src/utils/checkIfEntityExists';
+import { checkIfMarketExists, checkIfProductExists } from '../utils/checkIfEntityExists';
 import { MarketProduct } from './entities/market-product.entity';
-import { AppController } from 'src/app.controller';
-import { AppDataSource } from 'src/app.data-source';
+import { AppDataSource } from '../app.data-source';
 
 @Injectable()
 export class MarketProductService {

@@ -1,8 +1,8 @@
-import { AppDataSource } from "src/app.data-source";
-import { Category } from "src/category/entities/category.entity";
-import { MarketProduct } from "src/market-product/entities/market-product.entity";
-import { Market } from "src/market/entities/market.entity";
-import { Product } from "src/product/entities/product.entity";
+import { AppDataSource } from "../app.data-source";
+import { Category } from "../category/entities/category.entity";
+import { MarketProduct } from "../market-product/entities/market-product.entity";
+import { Market } from "../market/entities/market.entity";
+import { Product } from "../product/entities/product.entity";
 
 export async function checkIfMarketProductExists(id: number) {
   return await AppDataSource

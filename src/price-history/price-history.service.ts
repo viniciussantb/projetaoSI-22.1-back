@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { AppDataSource } from '../app.data-source';
-import { MarketProduct } from '../market-product/entities/market-product.entity';
 import { CreatePriceHistoryDto } from './dto/create-price-history.dto';
 import { UpdatePriceHistoryDto } from './dto/update-price-history.dto';
 import { PriceHistory } from './entities/price-history.entity';
-import { checkIfMarketProductExists } from 'src/utils/checkIfEntityExists';
+import { checkIfMarketProductExists } from '../utils/checkIfEntityExists';
 
 @Injectable()
 export class PriceHistoryService {

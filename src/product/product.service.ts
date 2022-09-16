@@ -7,7 +7,7 @@ import { Category } from '../category/entities/category.entity';
 import { ProductCategory } from './entities/productCategory.entity';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
-import { checkIfProductExists, checkIfCategoryExists } from 'src/utils/checkIfEntityExists';
+import { checkIfProductExists, checkIfCategoryExists } from '../utils/checkIfEntityExists';
 
 @Injectable()
 export class ProductService {
