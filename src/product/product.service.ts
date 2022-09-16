@@ -7,26 +7,10 @@ import { Category } from '../category/entities/category.entity';
 import { ProductCategory } from './entities/productCategory.entity';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
+import { checkIfProductExists, checkIfCategoryExists } from 'src/utils/checkIfEntityExists';
 
 @Injectable()
 export class ProductService {
-  async checkIfProductExists(id: number) {
-    return await AppDataSource
-    .createQueryBuilder()
-    .select('p')
-    .from(Product, 'p')
-    .where('p.id=:productId', { productId: id })
-    .getOne();
-  }
-
-  async checkIfCategoryExists(id: number) {
-    return await AppDataSource
-    .createQueryBuilder()
-    .select('p')
-    .from(Category, 'p')
-    .where('p.id=:categoryId', { categoryId: id })
-    .getOne();
-  }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const queryRunner = AppDataSource.createQueryRunner();
@@ -68,9 +52,9 @@ export class ProductService {
   }
 
   async createProductCategory(createProductCategoryDto: CreateProductCategoryDto) {
-    const product = await this.checkIfProductExists(createProductCategoryDto.productId);
+    const product = await checkIfProductExists(createProductCategoryDto.productId);
 
-    const category = await this.checkIfCategoryExists(createProductCategoryDto.categoryId);
+    const category = await checkIfCategoryExists(createProductCategoryDto.categoryId);
 
     if (!product || !category) return 'Error to insert ProductCategory. Product or Category does not exist.'
 
@@ -117,8 +101,8 @@ export class ProductService {
   }
 
   async updateProductCategory(updateProductCategoryDto: UpdateProductCategoryDto) {
-    const product = await this.checkIfProductExists(updateProductCategoryDto.productId);
-    const category = await this.checkIfCategoryExists(updateProductCategoryDto.categoryId);
+    const product = await checkIfProductExists(updateProductCategoryDto.productId);
+    const category = await checkIfCategoryExists(updateProductCategoryDto.categoryId);
 
     if (!product || !category) {
       return 'Error to update ProductCategory. Product or Category does not exist';
