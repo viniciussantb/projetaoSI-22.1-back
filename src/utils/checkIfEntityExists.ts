@@ -18,7 +18,7 @@ export async function checkIfMarketExists(id: number) {
   .createQueryBuilder()
   .select('m')
   .from(Market, 'm')
-  .where('m.id=:marketId', { MarketId: id })
+  .where('m.id=:marketId', { marketId: id })
   .getOne();
 }
 

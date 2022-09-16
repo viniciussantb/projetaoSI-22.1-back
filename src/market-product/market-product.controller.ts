@@ -21,7 +21,7 @@ export class MarketProductController {
       res.status(400).send({ message: marketProduct })
     }
 
-    return marketProduct;
+    return res.status(200).send({ message: marketProduct });
   }
 
   @Get()
@@ -45,7 +45,7 @@ export class MarketProductController {
       res.status(400).send({ message: marketProduct })
     }
 
-    return marketProduct;
+    return res.status(200).send({ message: marketProduct });
   }
 
   @Delete(':id')
