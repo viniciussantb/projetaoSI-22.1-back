@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Res, Put, Query } from '@nestjs/common';
 import { MarketProductService } from './market-product.service';
 import { CreateMarketProductDto } from './dto/create-market-product.dto';
 import { UpdateMarketProductDto } from './dto/update-market-product.dto';
@@ -22,6 +22,17 @@ export class MarketProductController {
     }
 
     return res.status(200).send({ message: marketProduct });
+  }
+
+  @Get('/findFiltered')
+  async findAllByNeighborhood(
+    @Query('neighborhood') neighborhood: string | undefined,
+    @Query('category') category: string[] | undefined,
+    @Query('clientId') clientId: string | undefined,
+  ) {
+    console.log('clientId: ', clientId);
+    return await this.marketProductService.findAllFiltered(
+      neighborhood, category, +clientId);
   }
 
   @Get()
