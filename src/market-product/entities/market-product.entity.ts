@@ -10,7 +10,6 @@ import {
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { Product } from "../../product/entities/product.entity";
 import { Market } from "../../market/entities/market.entity";
-import { ProductSelectionLog } from "../../product-selection-log/entities/product-selection-log.entity";
 import { PriceHistory } from "../../price-history/entities/price-history.entity";
 
 @ApiTags('Market Product')
@@ -43,10 +42,6 @@ export class MarketProduct {
   @ApiProperty({ name: 'market', type: Market })
   @ManyToOne(() => Market, (market) => market.marketProduct)
   market!: Market;
-
-  @ApiProperty({ name: 'productSelectionLog', type: ProductSelectionLog })
-  @OneToMany(() => ProductSelectionLog, (productSelectionLog) => productSelectionLog.marketProduct)
-  productSelectionLog?: ProductSelectionLog[];
 
   @ApiProperty({ name: 'priceHistory', type: PriceHistory })
   @OneToMany(() => PriceHistory, (priceHistory) => priceHistory.marketProduct)

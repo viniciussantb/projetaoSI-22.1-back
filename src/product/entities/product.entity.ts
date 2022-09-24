@@ -3,6 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   OneToMany,
+  JoinColumn,
  } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { MarketProduct } from "../../market-product/entities/market-product.entity";

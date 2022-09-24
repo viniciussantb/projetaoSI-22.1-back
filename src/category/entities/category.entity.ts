@@ -6,6 +6,7 @@ import {
 } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { ProductCategory } from "../../product/entities/productCategory.entity";
+import { ProductSelectionLog } from "../../product-selection-log/entities/product-selection-log.entity";
 
 @ApiTags('Category')
 @Entity({ name: 'category' })
@@ -17,6 +18,10 @@ export class Category {
   @ApiProperty({ name: 'productCategory', type: ProductCategory, nullable: true })
   @OneToMany(() => ProductCategory, (productCategory) => productCategory.category)
   productCategory?: ProductCategory[];
+
+  @ApiProperty({ name: 'productSelectionLog', type: ProductSelectionLog, nullable: true })
+  @OneToMany(() => ProductSelectionLog, (productSelectionLog) => productSelectionLog.category)
+  productSelectionLog?: ProductSelectionLog[];
 
   @ApiProperty({ name: 'name', type: String })
   @Column({ name: 'name', type: String })
