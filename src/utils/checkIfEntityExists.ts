@@ -1,3 +1,4 @@
+import { Client } from "../client/entities/client.entity";
 import { AppDataSource } from "../app.data-source";
 import { Category } from "../category/entities/category.entity";
 import { MarketProduct } from "../market-product/entities/market-product.entity";
@@ -37,5 +38,14 @@ export async function checkIfCategoryExists(id: number) {
   .select('p')
   .from(Category, 'p')
   .where('p.id=:categoryId', { categoryId: id })
+  .getOne();
+}
+
+export async function checkIfClientExists(id: number) {
+  return await AppDataSource
+  .createQueryBuilder()
+  .select('c')
+  .from(Client, 'c')
+  .where('c.id=:clientId', { clientId: id })
   .getOne();
 }
