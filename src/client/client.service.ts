@@ -1,26 +1,62 @@
 import { Injectable } from '@nestjs/common';
+import { AppDataSource } from '../app.data-source';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { Client } from './entities/client.entity';
 
 @Injectable()
 export class ClientService {
-  create(createClientDto: CreateClientDto) {
-    return 'This action adds a new client';
+  async create(createClientDto: CreateClientDto) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .insert()
+      .into(Client)
+      .values(createClientDto)
+      .execute();
   }
 
-  findAll() {
-    return `This action returns all client`;
+  async findAll() {
+    return await AppDataSource
+      .createQueryBuilder()
+      .select('c')
+      .from(Client, 'c')
+      .getMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} client`;
+  async findOne(id: number) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .select('c')
+      .from(Client, 'c')
+      .where('c.id=:clientId', { clientId: id })
+      .getOne();
   }
 
-  update(id: number, updateClientDto: UpdateClientDto) {
-    return `This action updates a #${id} client`;
+  async findByNeighborhood(neighborhood: string) {
+    console.log(neighborhood);
+    return await AppDataSource
+      .createQueryBuilder()
+      .select('c')
+      .from(Client, 'c')
+      .where('c.neighborhood=:clientNeighborhood', { clientNeighborhood: neighborhood })
+      .getMany();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} client`;
+  async update(updateClientDto: UpdateClientDto) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .update(Client)
+      .set(updateClientDto)
+      .where('id=:clientId', { clientId: updateClientDto.id })
+      .execute();
+  }
+
+  async remove(id: number) {
+    return await AppDataSource
+      .createQueryBuilder()
+      .delete()
+      .from(Client)
+      .where('id=:clientId', { clientId: id })
+      .execute();
   }
 }

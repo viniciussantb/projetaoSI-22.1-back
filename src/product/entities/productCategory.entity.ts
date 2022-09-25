@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   ManyToOne,
+  JoinColumn,
  } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { Product } from "./product.entity";
@@ -17,10 +18,15 @@ export class ProductCategory {
   id!: number;
   
   @ApiProperty({ name: 'product', type: Product })
-  @ManyToOne(() => Product, (product) => product.productCategory)
+  @ManyToOne(() => Product, (product) => product.productCategory, {
+    cascade: ['remove'],
+  })
+  @JoinColumn()
   product!: Product;
 
   @ApiProperty({ name: 'category', type: Category })
-  @ManyToOne(() => Category, (category) => category.productCategory)
+  @ManyToOne(() => Category, (category) => category.productCategory, {
+    cascade: ['remove'],
+  })
   category!: Category;
 }

@@ -1,15 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Res } from '@nestjs/common';
 import { PriceHistoryService } from './price-history.service';
 import { CreatePriceHistoryDto } from './dto/create-price-history.dto';
 import { UpdatePriceHistoryDto } from './dto/update-price-history.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 
+@ApiTags('Price-History')
 @Controller('price-history')
 export class PriceHistoryController {
   constructor(private readonly priceHistoryService: PriceHistoryService) {}
 
   @Post()
-  create(@Body() createPriceHistoryDto: CreatePriceHistoryDto) {
-    return this.priceHistoryService.create(createPriceHistoryDto);
+  async create(
+    @Res() res: Response,
+    @Body() createPriceHistoryDto: CreatePriceHistoryDto
+    ) {
+    const priceHistory = await this.priceHistoryService.create(createPriceHistoryDto);
+
+    if (!(priceHistory instanceof Object)) {
+      return res.status(400).send({ message: priceHistory });
+    }
+    return res.status(200).send({ message: priceHistory });
   }
 
   @Get()
@@ -22,9 +33,17 @@ export class PriceHistoryController {
     return this.priceHistoryService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePriceHistoryDto: UpdatePriceHistoryDto) {
-    return this.priceHistoryService.update(+id, updatePriceHistoryDto);
+  @Put()
+  async update(
+    @Body() updatePriceHistoryDto: UpdatePriceHistoryDto,
+    @Res() res: Response,
+    ) {
+    const priceHistory = await this.priceHistoryService.update(updatePriceHistoryDto);
+
+    if (!(priceHistory instanceof Object)) {
+      return res.status(400).send({ message: priceHistory });
+    }
+    return res.status(200).send({ message: priceHistory });
   }
 
   @Delete(':id')
