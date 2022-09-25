@@ -44,6 +44,31 @@ export class MarketProductService {
     .getMany();
   }
 
+  async createProductSelectionLog(clientId: number, categoryName: string, neighborhood: string) {
+    const category = await AppDataSource
+    .createQueryBuilder()
+    .select('c')
+    .from(Category, 'c')
+    .where('c.name=:categoryName', { categoryName })
+    .getOne();
+
+    const client = await checkIfClientExists(clientId);
+    
+    if (category && client) {
+      const log = new ProductSelectionLog();
+      log.category = category;
+      log.client = client;
+      log.neighborhood = neighborhood;
+      
+      await AppDataSource
+      .createQueryBuilder()
+      .insert()
+      .into(ProductSelectionLog)
+      .values(log)
+      .execute();
+    }
+  }
+
   async findAllFiltered(
     neighborhood: string, 
     categories: string[] | undefined,
@@ -61,17 +86,31 @@ export class MarketProductService {
 
       } else if (categories) {
         let queryRunner = AppDataSource.createQueryRunner();
-        let query =
-        `
-        SELECT pc."productId"
-        FROM "productCategory" pc
-        LEFT JOIN "category" ca ON pc."categoryId" = ca.id
-        LEFT JOIN "product" pr ON pc."productId" = pr.id
-        WHERE ca.name = ANY($1::varchar[]);
-        ` ;
+        let query;
+        if (Array.isArray(categories)) {
+          query =
+          `
+          SELECT pc."productId"
+          FROM "productCategory" pc
+          LEFT JOIN "category" ca ON pc."categoryId" = ca.id
+          LEFT JOIN "product" pr ON pc."productId" = pr.id
+          WHERE ca.name = ANY($1::character varying[]);
+          ` ;
+        } else {
+          query =
+          `
+          SELECT pc."productId"
+          FROM "productCategory" pc
+          LEFT JOIN "category" ca ON pc."categoryId" = ca.id
+          LEFT JOIN "product" pr ON pc."productId" = pr.id
+          WHERE ca.name = $1;
+          ` ;
+        }
         const result = await queryRunner.query(query, [categories]);
         await queryRunner.release();
         const productIds: number[] = [];
+
+        console.log('categories result: ', result);
 
         result.forEach(productId => {
           productIds.push(productId.productId);
@@ -88,38 +127,20 @@ export class MarketProductService {
           FROM "marketProduct" mp
           LEFT JOIN "market" mar ON mp."marketId" = mar.id
           LEFT JOIN "product" pr ON mp."productId" = pr.id
-          WHERE mp."productId" = ANY($1)
+          WHERE mp."productId" = ANY($1::integer[])
           AND mar.neighborhood = $2
           ORDER BY mp.boosted = false;
           `;
           marketProducts = await queryRunner.query(query, [productIds, neighborhood]);
 
           if (clientId) {
-            categories.forEach(async categoryName => {
-              const category = await AppDataSource
-              .createQueryBuilder()
-              .select('c')
-              .from(Category, 'c')
-              .where('c.name=:categoryName', { categoryName })
-              .getOne();
-
-              const client = await checkIfClientExists(clientId);
-              
-              if (category && client) {
-                const log = new ProductSelectionLog();
-                log.category = category;
-                log.client = client;
-                log.neighborhood = neighborhood;
-                
-                await AppDataSource
-                .createQueryBuilder()
-                .insert()
-                .into(ProductSelectionLog)
-                .values(log)
-                .execute();
-              }
-
-            })
+            if (Array.isArray(categories)) {              
+              categories.forEach(async categoryName => {
+                await this.createProductSelectionLog(clientId, categoryName, neighborhood);
+              });
+            } else {
+              await this.createProductSelectionLog(clientId, categories, neighborhood)
+            }
           }
 
         } else {
