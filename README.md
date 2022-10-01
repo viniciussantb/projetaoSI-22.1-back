@@ -24,7 +24,7 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+[API Link](https://flyer-projetao-si.herokuapp.com/)
 
 ## Pre-requisites
 
@@ -42,12 +42,17 @@ If you don't have a local postgres database, run the postgres docker image (reco
 # Run the docker image of postgres
 $ docker run --name projetao -e POSTGRES_PASSWORD=password -e POSTGRES_DB=projetao -e POSTGRES_USER=user -p 5432:5432 -d postgres
 ```
-Setup your environment variables (creating the ```.env``` file) according to the database connection config (example in ```.env.example``)
+Setup your environment variables (creating the ```.env``` file) according to the database connection config (example in ```.env.example```)
 
 Install the dependencies
 ```bash
 $ npm install
 ```
+Run the migrations
+```bash
+$ npm run run-migrations
+```
+
 Then run the application
 ```bash
 # development
