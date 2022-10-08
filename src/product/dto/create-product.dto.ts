@@ -1,4 +1,4 @@
-import { IsString, IsNumber,IsNotEmpty } from "class-validator";
+import { IsString, IsNumber,IsNotEmpty, IsArray } from "class-validator";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 
 @ApiTags('CreateProductDto')
@@ -17,8 +17,8 @@ export class CreateProductDto {
   @ApiProperty({ name: 'imageUrl', type: String, nullable: true })
   imageUrl?: string;
 
-  @IsNumber()
+  @IsArray()
   @IsNotEmpty()
-  @ApiProperty({ name: 'categoryIds', type: Number })
-  categoryIds!: Number[];
+  @ApiProperty({ name: 'categoryNames', type: String, isArray: true })
+  categoryNames!: string[];
 }
