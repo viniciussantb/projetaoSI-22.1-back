@@ -59,4 +59,27 @@ export class ClientService {
       .where('id=:clientId', { clientId: id })
       .execute();
   }
+
+  async login(email: string, password: string) {
+    const user = await AppDataSource
+      .createQueryBuilder()
+      .select('u')
+      .from(Client, 'u')
+      .where('u.email=:email', { email })
+      .andWhere('u.password=:password', { password })
+      .getOne();
+
+    if (!user) return user;
+
+    const userDto = {
+      id: user.id,
+      name: user.name,
+      nickname: user.nickname,
+      neighborhood: user.neighborhood,
+      email: user.email,
+      receiveEmail: user.receiveEmail,
+    }
+
+      return userDto;
+  }
 }
