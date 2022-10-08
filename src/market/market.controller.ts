@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { MarketService } from './market.service';
 import { CreateMarketDto } from './dto/create-market.dto';
 import { UpdateMarketDto } from './dto/update-market.dto';
@@ -18,6 +19,19 @@ export class MarketController {
   findAll() {
     return this.marketService.findAll();
   }
+
+  @Get('/login')
+  async login(
+    @Query('email') email: string,
+    @Query('password') password: string,
+    @Res() res: Response,
+    ) {
+      const user = await this.marketService.login(email, password);
+
+      if (!user) return res.status(404).send('Comércio não encontrado');
+
+      return res.status(200).send(user);
+    }
 
   @Get('neighborhood')
   findByNeighborhood(
