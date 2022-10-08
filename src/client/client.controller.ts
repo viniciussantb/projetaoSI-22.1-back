@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { ClientService } from './client.service';
 import { CreateClientDto } from './dto/create-client.dto';
@@ -23,6 +24,19 @@ export class ClientController {
   findByNeighborhood(@Query('neighborhood') neighborhood: string) {
     return this.clientService.findByNeighborhood(neighborhood);
   }
+
+  @Get('/login')
+  async login(
+    @Query('email') email: string,
+    @Query('password') password: string,
+    @Res() res: Response,
+    ) {
+      const user = await this.clientService.login(email, password);
+
+      if (!user) return res.status(404).send('Cliente não encontrado');
+
+      return res.status(200).send(user);
+    }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
