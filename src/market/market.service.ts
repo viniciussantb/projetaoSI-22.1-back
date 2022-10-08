@@ -58,4 +58,29 @@ export class MarketService {
       .where('id=:marketId', { marketId: id })
       .execute();
   }
+
+  async login(email: string, password: string) {
+    const user = await AppDataSource
+      .createQueryBuilder()
+      .select('u')
+      .from(Market, 'u')
+      .where('u.email=:email', { email })
+      .andWhere('u.password=:password', { password })
+      .getOne();
+
+    if (!user) return user;
+
+    const userDto = {
+      id: user.id,
+      name: user.name,
+      ownerName: user.ownerName,
+      neighborhood: user.neighborhood,
+      email: user.email,
+      adNumber: user.adNumber,
+      location: user.location,
+      cep: user.cep,
+    }
+
+      return userDto;
+  }
 }

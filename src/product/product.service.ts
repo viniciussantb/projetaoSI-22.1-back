@@ -13,8 +13,6 @@ import { checkIfProductExists, checkIfCategoryExists } from '../utils/checkIfEnt
 export class ProductService {
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
-    const queryRunner = AppDataSource.createQueryRunner();
-    await queryRunner.startTransaction();
 
     try {
       const product = new Product();
@@ -22,31 +20,33 @@ export class ProductService {
       product.description = createProductDto.description;
       product.imageUrl = createProductDto.imageUrl;
 
-      await queryRunner.manager.save(product);
+      await AppDataSource.createQueryBuilder()
+        .insert()
+        .into(Product)
+        .values(product)
+        .execute();
 
-      for (let i = 0; i < createProductDto.categoryIds.length; i++) {
+      for (let i = 0; i < createProductDto.categoryNames.length; i++) {
         const category = await AppDataSource
           .createQueryBuilder()
           .select('c')
           .from(Category, 'c')
-          .where('c.id=:categoryId', { categoryId: createProductDto.categoryIds[i] })
+          .where('LOWER(c.name) = LOWER(:categoryName)', { categoryName: createProductDto.categoryNames[i] })
           .getOne();
         
-        if (!category){
-          throw 'Category does not exist';
-        }
         const productCategory = new ProductCategory()
         productCategory.category = category;
         productCategory.product = product;
 
-        await queryRunner.manager.save(productCategory);
+        await AppDataSource.createQueryBuilder()
+          .insert()
+          .into(ProductCategory)
+          .values(productCategory)
+          .execute();
       }
-      
-      await queryRunner.commitTransaction();
 
       return product;
     } catch (err) {
-      await queryRunner.rollbackTransaction();
       return err;
     }
   }
