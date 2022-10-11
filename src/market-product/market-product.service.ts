@@ -7,6 +7,7 @@ import { AppDataSource } from '../app.data-source';
 import { ProductSelectionLog } from '../product-selection-log/entities/product-selection-log.entity';
 import { Category } from '../category/entities/category.entity';
 import { checkIfClientExists } from '../utils/checkIfEntityExists';
+import { Market } from '../market/entities/market.entity';
 
 @Injectable()
 export class MarketProductService {
@@ -44,6 +45,66 @@ export class MarketProductService {
     .getMany();
   }
 
+  async countProductLogs(categoryName: string, neighborhood: string) {
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    const query =
+    `
+    SELECT COUNT(*)
+    FROM "productSelectionLog" product_log
+    LEFT JOIN category cat ON cat.id = product_log."categoryId"
+    WHERE LOWER(cat.name) = LOWER($1)
+    AND LOWER(product_log.neighborhood) = LOWER($2)
+    AND product_log."createdAt" < NOW() + INTERVAL '7 day';
+    `
+
+    const countProductLogs = await queryRunner.query(query, [categoryName, neighborhood]);
+
+    await queryRunner.release();
+
+    return countProductLogs;
+  }
+
+  async sendNotificationToMarket(neighborhood: string) {
+    const markets = await AppDataSource
+      .createQueryBuilder()
+      .select(['m.email', 'm.ownerName'])
+      .from(Market, 'm')
+      .where('m.neighborhood=:neighborhood', { neighborhood })
+      .getMany();
+
+    console.log('Olá, várias pessoas estão procurando por produtos da categoria churrasco.');
+    console.log('Markets: ', markets);
+  }
+
+  async verifyNotification(categoryName: string, neighborhood: string) {
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    const query =
+    `
+    SELECT m_not.active
+    FROM "marketNotification" m_not
+    LEFT JOIN category cat ON cat.id = m_not."categoryId"
+    AND m_not.neighborhood = $1
+    AND cat.name = $2
+    AND m_not."createdAt" < NOW() + INTERVAL '1 day'
+    ORDER BY m_not."createdAt" DESC
+    LIMIT 1
+    ` ;
+
+    const invalidNoticiation = await queryRunner.query(query, [categoryName, neighborhood]);
+    queryRunner.release();
+
+    if(invalidNoticiation[0].active) {
+      return
+    }
+
+    const countProductLogs = await this.countProductLogs(categoryName, neighborhood);
+    if (+countProductLogs[0].count > 4) {
+      this.sendNotificationToMarket(neighborhood);
+    }
+  }
+
   async createProductSelectionLog(clientId: number, categoryName: string, neighborhood: string) {
     const category = await AppDataSource
     .createQueryBuilder()
@@ -67,6 +128,8 @@ export class MarketProductService {
       .values(log)
       .execute();
     }
+
+    this.verifyNotification(categoryName, neighborhood);
   }
 
   async findAllFiltered(
