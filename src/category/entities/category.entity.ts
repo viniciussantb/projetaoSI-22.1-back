@@ -8,7 +8,7 @@ import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { ProductCategory } from "../../product/entities/productCategory.entity";
 import { ProductSelectionLog } from "../../product-selection-log/entities/product-selection-log.entity";
 import { MarketNotification } from "../../notification/entities/marketNotification.entity";
-import { ClientNotification } from "../../notification/entities/clientNotification.entity";
+import { ClientNotification } from "../../notification/entities/clientNotification.dto";
 
 @ApiTags('Category')
 @Entity({ name: 'category' })

@@ -2,13 +2,11 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
 } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
-import { Market } from "../../market/entities/market.entity";
 import { Category } from "../../category/entities/category.entity";
 
 @ApiTags('MarketNotification')
