@@ -1,6 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { ProductSelectionLog } from "../../product-selection-log/entities/product-selection-log.entity";
+import { ClientNotification } from "../../notification/entities/clientNotification.entity";
 
 @ApiTags('Client')
 @Entity({ name: 'client' })
@@ -36,4 +37,8 @@ export class Client {
   @ApiProperty({ name: 'productSelectionLog', type: ProductSelectionLog, nullable: true })
   @OneToMany(() => ProductSelectionLog, (productSelectionLog) => productSelectionLog.client)
   productSelectionLog?: ProductSelectionLog[];
+
+  @ApiProperty({ name: 'clientNotification', type: ClientNotification, nullable: true })
+  @OneToMany(() => ClientNotification, (clientNotification) => clientNotification.client)
+  clientNotification?: ClientNotification[];
 }
