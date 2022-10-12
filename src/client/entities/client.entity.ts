@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { ApiProperty, ApiTags } from "@nestjs/swagger";
 import { ProductSelectionLog } from "../../product-selection-log/entities/product-selection-log.entity";
-import { ClientNotification } from "../../notification/entities/clientNotification.dto";
+import { ClientNotification } from "../../notification/entities/clientNotification.entity";
 
 @ApiTags('Client')
 @Entity({ name: 'client' })

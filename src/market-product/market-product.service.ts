@@ -60,9 +60,15 @@ export class MarketProductService {
 
     const countProductLogs = await queryRunner.query(query, [categoryName, neighborhood]);
 
+    console.log('count product logs: ', countProductLogs);
+
     await queryRunner.release();
 
     return countProductLogs;
+  }
+
+  async activeClientsAlert(categoryName: string, neighborhood: string) {
+    
   }
 
   async sendNotificationToMarket(neighborhood: string) {
@@ -73,29 +79,30 @@ export class MarketProductService {
       .where('m.neighborhood=:neighborhood', { neighborhood })
       .getMany();
 
-    console.log('Olá, várias pessoas estão procurando por produtos da categoria churrasco.');
-    console.log('Markets: ', markets);
+    console.log('Markets to notify: ', markets);
   }
 
-  async verifyNotification(categoryName: string, neighborhood: string) {
+  async verifyMarketNotification(categoryName: string, neighborhood: string) {
     const queryRunner = AppDataSource.createQueryRunner();
 
     const query =
     `
-    SELECT m_not.active
+    SELECT m_not.active, m_not."createdAt"
     FROM "marketNotification" m_not
     LEFT JOIN category cat ON cat.id = m_not."categoryId"
-    AND m_not.neighborhood = $1
-    AND cat.name = $2
-    AND m_not."createdAt" < NOW() + INTERVAL '1 day'
+   	WHERE m_not.neighborhood = 'CDU'
+    AND cat.name = 'bebido'
+    AND m_not."createdAt" > NOW() + INTERVAL '1 day'
     ORDER BY m_not."createdAt" DESC
     LIMIT 1
     ` ;
 
-    const invalidNoticiation = await queryRunner.query(query, [categoryName, neighborhood]);
+    const notificationSent = await queryRunner.query(query, [categoryName, neighborhood]);
     queryRunner.release();
 
-    if(invalidNoticiation[0].active) {
+    console.log('notification sent: ', notificationSent);
+
+    if(notificationSent[0].active) {
       return
     }
 
@@ -129,7 +136,7 @@ export class MarketProductService {
       .execute();
     }
 
-    this.verifyNotification(categoryName, neighborhood);
+    this.verifyMarketNotification(categoryName, neighborhood);
   }
 
   async findAllFiltered(
