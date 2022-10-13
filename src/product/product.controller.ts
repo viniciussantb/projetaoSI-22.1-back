@@ -63,7 +63,6 @@ export class ProductController {
     @Res() res: Response,
     @Body() updateProductCategoryDto: UpdateProductCategoryDto) {
       const productCategoryUpdated = await this.productService.updateProductCategory(updateProductCategoryDto);
-      console.log(productCategoryUpdated);
       if (!(productCategoryUpdated instanceof Object)) 
         return res.status(400).send({ message: productCategoryUpdated })
       return res.status(200).send({ message: productCategoryUpdated })

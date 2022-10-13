@@ -33,7 +33,6 @@ export class ClientService {
   }
 
   async findByNeighborhood(neighborhood: string) {
-    console.log(neighborhood);
     return await AppDataSource
       .createQueryBuilder()
       .select('c')
