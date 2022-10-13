@@ -8,6 +8,10 @@ import { ProductSelectionLog } from '../product-selection-log/entities/product-s
 import { Category } from '../category/entities/category.entity';
 import { checkIfClientExists } from '../utils/checkIfEntityExists';
 import { Market } from '../market/entities/market.entity';
+import { MarketNotification } from '../notification/entities/marketNotification.enitity';
+import { ClientNotification } from '../notification/entities/clientNotification.entity';
+import { Client } from '../client/entities/client.entity';
+import { CreateClientNotificationDto } from 'src/notification/dto/client-notification.dto';
 
 @Injectable()
 export class MarketProductService {
@@ -60,15 +64,68 @@ export class MarketProductService {
 
     const countProductLogs = await queryRunner.query(query, [categoryName, neighborhood]);
 
-    console.log('count product logs: ', countProductLogs);
-
     await queryRunner.release();
 
     return countProductLogs;
   }
 
-  async activeClientsAlert(categoryName: string, neighborhood: string) {
-    
+  async createClientsAlert(category: Category, neighborhood: string) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    const query =
+      `
+      SELECT DISTINCT client.name, client.email
+      FROM "productSelectionLog" prod_log
+      LEFT JOIN client ON client.id = prod_log."clientId"
+      LEFT JOIN category ON category.id = prod_log."categoryId"
+      WHERE category.name = $1
+      AND prod_log.neighborhood = $2
+      AND client."receiveEmail" = true
+      `;
+
+    const activeClients = await queryRunner.query(query, [category.name, neighborhood]);
+
+    activeClients.forEach(async client => {
+      const activeClient = await AppDataSource.createQueryBuilder()
+        .select('c')
+        .from(Client, 'c')
+        .where('c.name=:clientName', { cilentName: client.name })
+        .andWhere('c.email=:clientEmail', { clientEmail: client.email })
+        .getOne();
+
+      const clientNotification = new ClientNotification();
+      clientNotification.active = true;
+      clientNotification.category = category;
+      clientNotification.neighborhood = neighborhood;
+      clientNotification.client = activeClient;
+      
+      await AppDataSource.createQueryBuilder()
+        .insert()
+        .into(ClientNotification)
+        .values(clientNotification)
+        .execute();
+    });
+  }
+
+  async sendNotificationToClient(
+      neighborhood: string,
+      category: string,
+      marketProduct: MarketProduct
+    ) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    const query =
+    `
+    SELECT DISTINCT client.name, client.email
+    FROM "clientNotification" client_notif
+    LEFT JOIN client ON client.id = client_notif."clientId"
+    LEFT JOIN category cat ON cat.id = client_notif."categoryId"
+    WHERE cat.name = $1
+    AND client_notif.neighborhood = $2
+    AND client_notif."createdAt" < NOW() + INTERVAL '1 day'
+    `;
+
+    const alertClientsNotification = await queryRunner.query(query, [category, neighborhood]);
+
+    console.log('alertClientsNotification: ', alertClientsNotification);
   }
 
   async sendNotificationToMarket(neighborhood: string) {
@@ -78,8 +135,6 @@ export class MarketProductService {
       .from(Market, 'm')
       .where('m.neighborhood=:neighborhood', { neighborhood })
       .getMany();
-
-    console.log('Markets to notify: ', markets);
   }
 
   async verifyMarketNotification(categoryName: string, neighborhood: string) {
@@ -90,30 +145,45 @@ export class MarketProductService {
     SELECT m_not.active, m_not."createdAt"
     FROM "marketNotification" m_not
     LEFT JOIN category cat ON cat.id = m_not."categoryId"
-   	WHERE m_not.neighborhood = 'CDU'
-    AND cat.name = 'bebido'
+   	WHERE m_not.neighborhood = $1
+    AND cat.name = $2
     AND m_not."createdAt" > NOW() + INTERVAL '1 day'
     ORDER BY m_not."createdAt" DESC
     LIMIT 1
     ` ;
 
-    const notificationSent = await queryRunner.query(query, [categoryName, neighborhood]);
+    const notificationSent = await queryRunner.query(query, [neighborhood, categoryName]);
     queryRunner.release();
 
-    console.log('notification sent: ', notificationSent);
-
-    if(notificationSent[0].active) {
+    if(notificationSent.length > 0) {
       return
     }
 
     const countProductLogs = await this.countProductLogs(categoryName, neighborhood);
     if (+countProductLogs[0].count > 4) {
       this.sendNotificationToMarket(neighborhood);
+
+      const category = await AppDataSource.createQueryBuilder()
+        .select('c')
+        .from(Category, 'c')
+        .where('c.name=:categoryName', { categoryName })
+        .getOne();
+
+      const marketNotification = new MarketNotification();
+      marketNotification.active = true;
+      marketNotification.category = category
+      marketNotification.neighborhood = neighborhood;
+
+      await AppDataSource.createQueryBuilder()
+        .insert()
+        .into(MarketNotification)
+        .values(marketNotification)
+        .execute();
     }
   }
 
   async createProductSelectionLog(clientId: number, categoryName: string, neighborhood: string) {
-    const category = await AppDataSource
+    const category = await AppDataSource 
     .createQueryBuilder()
     .select('c')
     .from(Category, 'c')
@@ -179,8 +249,6 @@ export class MarketProductService {
         const result = await queryRunner.query(query, [categories]);
         await queryRunner.release();
         const productIds: number[] = [];
-
-        console.log('categories result: ', result);
 
         result.forEach(productId => {
           productIds.push(productId.productId);

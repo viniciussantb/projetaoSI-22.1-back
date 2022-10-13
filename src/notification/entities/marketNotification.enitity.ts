@@ -18,15 +18,15 @@ export class MarketNotification {
 
   @ApiProperty({ name: 'category', type: Category })
   @ManyToOne(() => Category)
-  category?: Category;
+  category!: Category;
 
   @ApiProperty({ name: 'neighborhood', type: String, default: true })
   @Column({ name: 'neighborhood', type: String, default: true })
   neighborhood!: string;
 
-  @ApiProperty({ name: 'active', type: Boolean, default: true })
-  @Column({ name: 'active', type: Boolean, default: true })
-  active!: boolean;
+  @ApiProperty({ name: 'active', type: Boolean, default: true, nullable: true })
+  @Column({ name: 'active', type: Boolean, default: true, nullable: true })
+  active?: boolean;
 
   @CreateDateColumn({ name: 'createdAt' })
   createdAt!: Date;
