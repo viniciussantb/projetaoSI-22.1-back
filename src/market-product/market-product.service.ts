@@ -11,7 +11,8 @@ import { Market } from '../market/entities/market.entity';
 import { MarketNotification } from '../notification/entities/marketNotification.enitity';
 import { ClientNotification } from '../notification/entities/clientNotification.entity';
 import { Client } from '../client/entities/client.entity';
-import { CreateClientNotificationDto } from 'src/notification/dto/client-notification.dto';
+import { NotificationDto } from '../notification/dto/notification.dto';
+import { Product } from 'src/product/entities/product.entity';
 
 @Injectable()
 export class MarketProductService {
@@ -123,18 +124,38 @@ export class MarketProductService {
     AND client_notif."createdAt" < NOW() + INTERVAL '1 day'
     `;
 
-    const alertClientsNotification = await queryRunner.query(query, [category, neighborhood]);
+    const clientsToNotify = await queryRunner.query(query, [category, neighborhood]);
 
-    console.log('alertClientsNotification: ', alertClientsNotification);
+    console.log('clientsToNotify: ', clientsToNotify);
+
+    const notificationDto = new NotificationDto();
+    notificationDto.isMarket = false;
+    notificationDto.category = category;
+    notificationDto.userData = clientsToNotify;
+    notificationDto.marketProduct = {
+      price: marketProduct.price,
+      quantity: marketProduct.quantity,
+      productName: marketProduct.product.name,
+      marketName: marketProduct.market.name,
+    }
+
+    console.log('client notificationDto: ', notificationDto);
   }
 
-  async sendNotificationToMarket(neighborhood: string) {
+  async sendNotificationToMarket(neighborhood: string, categoryName: string) {
     const markets = await AppDataSource
       .createQueryBuilder()
-      .select(['m.email', 'm.ownerName'])
+      .select(['m.email', 'm.ownerName as name'])
       .from(Market, 'm')
       .where('m.neighborhood=:neighborhood', { neighborhood })
       .getMany();
+
+    const notificationDto = new NotificationDto();
+    notificationDto.category = categoryName;
+    notificationDto.isMarket = true;
+    notificationDto.userData = markets;
+    
+    console.log('market notificationDto: ', notificationDto);
   }
 
   async verifyMarketNotification(categoryName: string, neighborhood: string) {
@@ -161,7 +182,7 @@ export class MarketProductService {
 
     const countProductLogs = await this.countProductLogs(categoryName, neighborhood);
     if (+countProductLogs[0].count > 4) {
-      this.sendNotificationToMarket(neighborhood);
+      this.sendNotificationToMarket(neighborhood, categoryName);
 
       const category = await AppDataSource.createQueryBuilder()
         .select('c')
