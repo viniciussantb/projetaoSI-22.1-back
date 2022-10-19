@@ -12,13 +12,24 @@ import { MarketNotification } from '../notification/entities/marketNotification.
 import { ClientNotification } from '../notification/entities/clientNotification.entity';
 import { Client } from '../client/entities/client.entity';
 import { NotificationDto } from '../notification/dto/notification.dto';
-import { Product } from 'src/product/entities/product.entity';
 
 @Injectable()
 export class MarketProductService {
   async create(createMarketProductDto: CreateMarketProductDto) {
     const product = await checkIfProductExists(createMarketProductDto.productId);
     const market = await checkIfMarketExists(createMarketProductDto.marketId);
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    const query = `
+    SELECT cat.name
+    FROM "product" prod
+    LEFT JOIN "productCategory" pc ON pc."productId" = prod.id
+    LEFT JOIN category cat ON cat.id = pc."categoryId"
+    WHERE prod.id = $1
+    `;
+
+    const productCategory = await queryRunner.query(query, [product.id]);
+    queryRunner.release();
 
     if (!product || !market) {
       return 'Error to insert MarketProduct. Product or Markert does not exist.'
@@ -31,13 +42,17 @@ export class MarketProductService {
     marketProduct.boosted = createMarketProductDto.boosted;
     marketProduct.quantity = createMarketProductDto.quantity;
     marketProduct.price = createMarketProductDto.price;
-
-    return await AppDataSource
+ 
+    await AppDataSource
     .createQueryBuilder()
     .insert()
     .into(MarketProduct)
     .values(marketProduct)
     .execute();
+
+    this.sendNotificationToClient(market.neighborhood, productCategory[0].name, marketProduct);
+
+    return marketProduct;
   }
 
   async findAll() {
@@ -89,7 +104,7 @@ export class MarketProductService {
       const activeClient = await AppDataSource.createQueryBuilder()
         .select('c')
         .from(Client, 'c')
-        .where('c.name=:clientName', { cilentName: client.name })
+        .where('c.name=:clientName', { clientName: client.name })
         .andWhere('c.email=:clientEmail', { clientEmail: client.email })
         .getOne();
 
@@ -200,6 +215,7 @@ export class MarketProductService {
         .into(MarketNotification)
         .values(marketNotification)
         .execute();
+      this.createClientsAlert(category, neighborhood);
     }
   }
 
