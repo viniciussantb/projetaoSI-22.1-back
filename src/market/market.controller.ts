@@ -20,6 +20,11 @@ export class MarketController {
     return this.marketService.findAll();
   }
 
+  @Get('/products/:id')
+  async getMarketProducts(@Param('id') id: string) {
+    return await this.marketService.findMarketProducts(+id);
+  }
+
   @Get('/login')
   async login(
     @Query('email') email: string,

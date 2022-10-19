@@ -7,7 +7,8 @@ import { Category } from '../category/entities/category.entity';
 import { ProductCategory } from './entities/productCategory.entity';
 import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
-import { checkIfProductExists, checkIfCategoryExists } from '../utils/checkIfEntityExists';
+import { checkIfProductExists, checkIfCategoryExists, checkIfMarketExists } from '../utils/checkIfEntityExists';
+import { MarketProduct } from '../market-product/entities/market-product.entity';
 
 @Injectable()
 export class ProductService {
@@ -20,11 +21,28 @@ export class ProductService {
       product.description = createProductDto.description;
       product.imageUrl = createProductDto.imageUrl;
 
+      
       await AppDataSource.createQueryBuilder()
-        .insert()
-        .into(Product)
-        .values(product)
-        .execute();
+      .insert()
+      .into(Product)
+      .values(product)
+      .execute();
+
+      if (createProductDto.marketId) {
+        const market = await checkIfMarketExists(createProductDto.marketId);
+        const marketProduct = new MarketProduct();
+        marketProduct.market = market;
+        marketProduct.active = true;
+        marketProduct.price = createProductDto.price;
+        marketProduct.product = product;
+        marketProduct.quantity = createProductDto.quantity;
+
+        await AppDataSource.createQueryBuilder()
+          .insert()
+          .into(MarketProduct)
+          .values(marketProduct)
+          .execute();
+      }
 
       for (let i = 0; i < createProductDto.categoryNames.length; i++) {
         const category = await AppDataSource

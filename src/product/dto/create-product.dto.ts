@@ -17,6 +17,18 @@ export class CreateProductDto {
   @ApiProperty({ name: 'imageUrl', type: String, nullable: true })
   imageUrl?: string;
 
+  @IsNumber()
+  @ApiProperty({ name: 'price', type: Number, nullable: true })
+  price?: number;
+
+  @IsNumber()
+  @ApiProperty({ name: 'marketId', type: Number, nullable: true })
+  marketId?: number;
+
+  @IsNumber()
+  @ApiProperty({ name: 'quantity', type: Number, nullable: true })
+  quantity?: number;
+
   @IsArray()
   @IsNotEmpty()
   @ApiProperty({ name: 'categoryNames', type: String, isArray: true })

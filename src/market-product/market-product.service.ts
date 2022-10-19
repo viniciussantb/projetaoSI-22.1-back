@@ -123,7 +123,7 @@ export class MarketProductService {
           SELECT 
             mp.id, mp.quantity, mp."Price", mp.boosted, mp.active, mp."marketId", mp."productId",
             pr.name as "productName", pr.description as "productDescripton", pr."imageUrl",
-            mar.name as "marketName", mar.email as "marketEmail", mar.neighborhood, mar.cep
+            mar.name as "marketName", mar.email as "marketEmail", mar.neighborhood, mar.cep, mar.location
           FROM "marketProduct" mp
           LEFT JOIN "market" mar ON mp."marketId" = mar.id
           LEFT JOIN "product" pr ON mp."productId" = pr.id
