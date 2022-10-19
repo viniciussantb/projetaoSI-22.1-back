@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { MarketProduct } from '../market-product/entities/market-product.entity';
 import { AppDataSource } from '../app.data-source';
 import { CreateMarketDto } from './dto/create-market.dto';
 import { UpdateMarketDto } from './dto/update-market.dto';
@@ -30,6 +31,22 @@ export class MarketService {
       .from(Market, 'm')
       .where('m.id=:marketId', { marketId: id })
       .getOne();
+  }
+
+  async findMarketProducts(id: number) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    const query = `
+    SELECT mp.quantity, mp."Price", prod.name
+    FROM "marketProduct" mp
+    LEFT JOIN product prod ON prod.id = mp."productId"
+    WHERE mp."marketId" = $1
+    AND mp.active=true
+    `;
+
+    const marketProduct = await queryRunner.query(query, [id]);
+    queryRunner.release()
+
+    return marketProduct;
   }
 
   async findByNeighborhood(neighborhood: string) {

@@ -27,9 +27,9 @@ export class MarketProduct {
   @Column({ name: 'Price', type: Number })
   price!: number;
 
-  @ApiProperty({ name: 'boosted', type: Boolean, })
-  @Column({ name: 'boosted', type: Boolean, })
-  boosted!: boolean;
+  @ApiProperty({ name: 'boosted', type: Boolean, nullable: true })
+  @Column({ name: 'boosted', type: Boolean, nullable: true })
+  boosted?: boolean;
 
   @ApiProperty({ name: 'active', type: Boolean, })
   @Column({ name: 'active', type: Boolean, })

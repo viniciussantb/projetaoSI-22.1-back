@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  await AppDataSource.initialize()
+  AppDataSource.initialize()
     .then(() => console.log('App Data-Source Initialized...'))
     .catch((err) => console.log('Error to initialize App Data-Source', err));
 
