@@ -16,20 +16,50 @@ export class MarketService {
   }
 
   async findAll() {
-    return await AppDataSource
+    const users = await AppDataSource
     .createQueryBuilder()
     .select('m')
     .from(Market, 'm')
     .getMany();
+
+    const usersDto = users.map(user => {
+      const userDto = {
+        id: user.id,
+        name: user.name,
+        ownerName: user.ownerName,
+        neighborhood: user.neighborhood,
+        email: user.email,
+        adNumber: user.adNumber,
+        location: user.location,
+        cep: user.cep,
+      }
+
+      return userDto;
+    });
+
+    return usersDto;
   }
 
   async findOne(id: number) {
-    return await AppDataSource
+    const user = await AppDataSource
       .createQueryBuilder()
       .select('m')
       .from(Market, 'm')
       .where('m.id=:marketId', { marketId: id })
       .getOne();
+
+    const userDto = {
+      id: user.id,
+      name: user.name,
+      ownerName: user.ownerName,
+      neighborhood: user.neighborhood,
+      email: user.email,
+      adNumber: user.adNumber,
+      location: user.location,
+      cep: user.cep,
+    };
+
+    return userDto;
   }
 
   async findByNeighborhood(neighborhood: string) {
