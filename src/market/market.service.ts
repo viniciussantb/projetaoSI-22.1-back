@@ -83,4 +83,17 @@ export class MarketService {
 
       return userDto;
   }
+
+  async getNeighborhoods() {
+    const queryRunner = AppDataSource.createQueryRunner();
+    const query = `
+    SELECT DISTINCT market.neighborhood
+    FROM market;
+    `;
+
+    const neighborhood = await queryRunner.query(query);
+    queryRunner.release();
+    
+    return neighborhood;
+  }
 }

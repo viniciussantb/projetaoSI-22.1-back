@@ -33,11 +33,16 @@ export class MarketController {
       return res.status(200).send(user);
     }
 
-  @Get('neighborhood')
+  @Get('findByNeighborhood')
   findByNeighborhood(
     @Query('neighborhood') neighborhood: string
   ) {
     return this.marketService.findByNeighborhood(neighborhood);
+  }
+
+  @Get('neighborhood')
+  async getNeighborhoods() {
+    return this.marketService.getNeighborhoods();
   }
 
   @Get(':id')
