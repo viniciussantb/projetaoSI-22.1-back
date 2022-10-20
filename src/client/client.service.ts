@@ -16,24 +16,49 @@ export class ClientService {
   }
 
   async findAll() {
-    return await AppDataSource
+    const users = await AppDataSource
       .createQueryBuilder()
       .select('c')
       .from(Client, 'c')
       .getMany();
+    
+    const usersDto = users.map(user => {
+      const userDto = {
+        id: user.id,
+        name: user.name,
+        nickname: user.nickname,
+        neighborhood: user.neighborhood,
+        email: user.email,
+        receiveEmail: user.receiveEmail,
+      };
+
+      return userDto;
+    });
+
+    return usersDto;
   }
 
   async findOne(id: number) {
-    return await AppDataSource
+    const user = await AppDataSource
       .createQueryBuilder()
       .select('c')
       .from(Client, 'c')
       .where('c.id=:clientId', { clientId: id })
       .getOne();
+    
+    const userDto = {
+      id: user.id,
+      name: user.name,
+      nickname: user.nickname,
+      neighborhood: user.neighborhood,
+      email: user.email,
+      receiveEmail: user.receiveEmail,
+    };
+
+    return userDto;
   }
 
   async findByNeighborhood(neighborhood: string) {
-    console.log(neighborhood);
     return await AppDataSource
       .createQueryBuilder()
       .select('c')

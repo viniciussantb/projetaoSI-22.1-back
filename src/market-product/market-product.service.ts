@@ -7,12 +7,32 @@ import { AppDataSource } from '../app.data-source';
 import { ProductSelectionLog } from '../product-selection-log/entities/product-selection-log.entity';
 import { Category } from '../category/entities/category.entity';
 import { checkIfClientExists } from '../utils/checkIfEntityExists';
+import { Market } from '../market/entities/market.entity';
+import { MarketNotification } from '../notification/entities/marketNotification.enitity';
+import { ClientNotification } from '../notification/entities/clientNotification.entity';
+import { Client } from '../client/entities/client.entity';
+import { NotificationDto } from '../notification/dto/notification.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class MarketProductService {
+  constructor(private readonly notificationService: NotificationService) {}
+
   async create(createMarketProductDto: CreateMarketProductDto) {
     const product = await checkIfProductExists(createMarketProductDto.productId);
     const market = await checkIfMarketExists(createMarketProductDto.marketId);
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    const query = `
+    SELECT cat.name
+    FROM "product" prod
+    LEFT JOIN "productCategory" pc ON pc."productId" = prod.id
+    LEFT JOIN category cat ON cat.id = pc."categoryId"
+    WHERE prod.id = $1
+    `;
+
+    const productCategory = await queryRunner.query(query, [product.id]);
+    queryRunner.release();
 
     if (!product || !market) {
       return 'Error to insert MarketProduct. Product or Markert does not exist.'
@@ -25,13 +45,17 @@ export class MarketProductService {
     marketProduct.boosted = createMarketProductDto.boosted;
     marketProduct.quantity = createMarketProductDto.quantity;
     marketProduct.price = createMarketProductDto.price;
-
-    return await AppDataSource
+ 
+    await AppDataSource
     .createQueryBuilder()
     .insert()
     .into(MarketProduct)
     .values(marketProduct)
     .execute();
+
+    this.sendNotificationToClient(market.neighborhood, productCategory[0].name, marketProduct);
+
+    return marketProduct;
   }
 
   async findAll() {
@@ -44,8 +68,160 @@ export class MarketProductService {
     .getMany();
   }
 
+  async countProductLogs(categoryName: string, neighborhood: string) {
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    const query =
+    `
+    SELECT COUNT(*)
+    FROM "productSelectionLog" product_log
+    LEFT JOIN category cat ON cat.id = product_log."categoryId"
+    WHERE LOWER(cat.name) = LOWER($1)
+    AND LOWER(product_log.neighborhood) = LOWER($2)
+    AND product_log."createdAt" < NOW() + INTERVAL '7 day';
+    `
+
+    const countProductLogs = await queryRunner.query(query, [categoryName, neighborhood]);
+
+    await queryRunner.release();
+
+    return countProductLogs;
+  }
+
+  async createClientsAlert(category: Category, neighborhood: string) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    const query =
+      `
+      SELECT DISTINCT client.name, client.email
+      FROM "productSelectionLog" prod_log
+      LEFT JOIN client ON client.id = prod_log."clientId"
+      LEFT JOIN category ON category.id = prod_log."categoryId"
+      WHERE category.name = $1
+      AND prod_log.neighborhood = $2
+      AND client."receiveEmail" = true
+      `;
+
+    const activeClients = await queryRunner.query(query, [category.name, neighborhood]);
+
+    activeClients.forEach(async client => {
+      const activeClient = await AppDataSource.createQueryBuilder()
+        .select('c')
+        .from(Client, 'c')
+        .where('c.name=:clientName', { clientName: client.name })
+        .andWhere('c.email=:clientEmail', { clientEmail: client.email })
+        .getOne();
+
+      const clientNotification = new ClientNotification();
+      clientNotification.active = true;
+      clientNotification.category = category;
+      clientNotification.neighborhood = neighborhood;
+      clientNotification.client = activeClient;
+      
+      await AppDataSource.createQueryBuilder()
+        .insert()
+        .into(ClientNotification)
+        .values(clientNotification)
+        .execute();
+    });
+  }
+
+  async sendNotificationToClient(
+      neighborhood: string,
+      category: string,
+      marketProduct: MarketProduct
+    ) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    const query =
+    `
+    SELECT DISTINCT client.name, client.email
+    FROM "clientNotification" client_notif
+    LEFT JOIN client ON client.id = client_notif."clientId"
+    LEFT JOIN category cat ON cat.id = client_notif."categoryId"
+    WHERE cat.name = $1
+    AND client_notif.neighborhood = $2
+    AND client_notif."createdAt" < NOW() + INTERVAL '1 day'
+    `;
+
+    const clientsToNotify = await queryRunner.query(query, [category, neighborhood]);
+
+    const notificationDto = new NotificationDto();
+    notificationDto.isMarket = false;
+    notificationDto.category = category;
+    notificationDto.userData = clientsToNotify;
+    notificationDto.marketProduct = {
+      price: marketProduct.price,
+      quantity: marketProduct.quantity,
+      productName: marketProduct.product.name,
+      marketName: marketProduct.market.name,
+    }
+
+    this.notificationService.sendNotification(notificationDto);
+  }
+
+  async sendNotificationToMarket(neighborhood: string, categoryName: string) {
+    const markets = await AppDataSource
+      .createQueryBuilder()
+      .select(['m.email', 'm.ownerName as name'])
+      .from(Market, 'm')
+      .where('m.neighborhood=:neighborhood', { neighborhood })
+      .getMany();
+
+    const notificationDto = new NotificationDto();
+    notificationDto.category = categoryName;
+    notificationDto.isMarket = true;
+    notificationDto.userData = markets;
+    
+    this.notificationService.sendNotification(notificationDto);
+  }
+
+  async verifyMarketNotification(categoryName: string, neighborhood: string) {
+    const queryRunner = AppDataSource.createQueryRunner();
+
+    const query =
+    `
+    SELECT m_not.active, m_not."createdAt"
+    FROM "marketNotification" m_not
+    LEFT JOIN category cat ON cat.id = m_not."categoryId"
+   	WHERE m_not.neighborhood = $1
+    AND cat.name = $2
+    AND m_not."createdAt" < NOW() + INTERVAL '1 day'
+    ORDER BY m_not."createdAt" DESC
+    LIMIT 1
+    ` ;
+
+    const notificationSent = await queryRunner.query(query, [neighborhood, categoryName]);
+    queryRunner.release();
+
+    if(notificationSent.length > 0) {
+      return
+    }
+
+    const countProductLogs = await this.countProductLogs(categoryName, neighborhood);
+    if (+countProductLogs[0].count > 4) {
+      this.sendNotificationToMarket(neighborhood, categoryName);
+
+      const category = await AppDataSource.createQueryBuilder()
+        .select('c')
+        .from(Category, 'c')
+        .where('c.name=:categoryName', { categoryName })
+        .getOne();
+
+      const marketNotification = new MarketNotification();
+      marketNotification.active = true;
+      marketNotification.category = category
+      marketNotification.neighborhood = neighborhood;
+
+      await AppDataSource.createQueryBuilder()
+        .insert()
+        .into(MarketNotification)
+        .values(marketNotification)
+        .execute();
+      this.createClientsAlert(category, neighborhood);
+    }
+  }
+
   async createProductSelectionLog(clientId: number, categoryName: string, neighborhood: string) {
-    const category = await AppDataSource
+    const category = await AppDataSource 
     .createQueryBuilder()
     .select('c')
     .from(Category, 'c')
@@ -66,7 +242,10 @@ export class MarketProductService {
       .into(ProductSelectionLog)
       .values(log)
       .execute();
+
+      this.verifyMarketNotification(categoryName, neighborhood);
     }
+
   }
 
   async findAllFiltered(
@@ -109,8 +288,6 @@ export class MarketProductService {
         const result = await queryRunner.query(query, [categories]);
         await queryRunner.release();
         const productIds: number[] = [];
-
-        console.log('categories result: ', result);
 
         result.forEach(productId => {
           productIds.push(productId.productId);

@@ -30,7 +30,6 @@ export class MarketProductController {
     @Query('category') category: string[] | undefined,
     @Query('clientId') clientId: string | undefined,
   ) {
-    console.log('clientId: ', clientId);
     return await this.marketProductService.findAllFiltered(
       neighborhood, category, +clientId);
   }
