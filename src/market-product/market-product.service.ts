@@ -12,9 +12,12 @@ import { MarketNotification } from '../notification/entities/marketNotification.
 import { ClientNotification } from '../notification/entities/clientNotification.entity';
 import { Client } from '../client/entities/client.entity';
 import { NotificationDto } from '../notification/dto/notification.dto';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class MarketProductService {
+  constructor(private readonly notificationService: NotificationService) {}
+
   async create(createMarketProductDto: CreateMarketProductDto) {
     const product = await checkIfProductExists(createMarketProductDto.productId);
     const market = await checkIfMarketExists(createMarketProductDto.marketId);
@@ -141,8 +144,6 @@ export class MarketProductService {
 
     const clientsToNotify = await queryRunner.query(query, [category, neighborhood]);
 
-    console.log('clientsToNotify: ', clientsToNotify);
-
     const notificationDto = new NotificationDto();
     notificationDto.isMarket = false;
     notificationDto.category = category;
@@ -154,7 +155,7 @@ export class MarketProductService {
       marketName: marketProduct.market.name,
     }
 
-    console.log('client notificationDto: ', notificationDto);
+    this.notificationService.sendNotification(notificationDto);
   }
 
   async sendNotificationToMarket(neighborhood: string, categoryName: string) {
@@ -170,7 +171,7 @@ export class MarketProductService {
     notificationDto.isMarket = true;
     notificationDto.userData = markets;
     
-    console.log('market notificationDto: ', notificationDto);
+    this.notificationService.sendNotification(notificationDto);
   }
 
   async verifyMarketNotification(categoryName: string, neighborhood: string) {
@@ -183,7 +184,7 @@ export class MarketProductService {
     LEFT JOIN category cat ON cat.id = m_not."categoryId"
    	WHERE m_not.neighborhood = $1
     AND cat.name = $2
-    AND m_not."createdAt" > NOW() + INTERVAL '1 day'
+    AND m_not."createdAt" < NOW() + INTERVAL '1 day'
     ORDER BY m_not."createdAt" DESC
     LIMIT 1
     ` ;
@@ -241,9 +242,10 @@ export class MarketProductService {
       .into(ProductSelectionLog)
       .values(log)
       .execute();
+
+      this.verifyMarketNotification(categoryName, neighborhood);
     }
 
-    this.verifyMarketNotification(categoryName, neighborhood);
   }
 
   async findAllFiltered(
