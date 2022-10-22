@@ -9,9 +9,13 @@ import { UpdateProductCategoryDto } from './dto/update-product-category.dto';
 import { CreateProductCategoryDto } from './dto/create-product-category.dto';
 import { checkIfProductExists, checkIfCategoryExists, checkIfMarketExists } from '../utils/checkIfEntityExists';
 import { MarketProduct } from '../market-product/entities/market-product.entity';
+import { NotificationDto } from '../notification/dto/notification.dto';
+import { NotificationService } from '../notification/notification.service';
+import { Market } from '../market/entities/market.entity';
 
 @Injectable()
 export class ProductService {
+  constructor(private readonly notificationService: NotificationService) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
 
@@ -28,9 +32,12 @@ export class ProductService {
       .values(product)
       .execute();
 
+      let market: Market;
+      let marketProduct: MarketProduct;
+
       if (createProductDto.marketId) {
-        const market = await checkIfMarketExists(createProductDto.marketId);
-        const marketProduct = new MarketProduct();
+        market = await checkIfMarketExists(createProductDto.marketId);
+        marketProduct = new MarketProduct();
         marketProduct.market = market;
         marketProduct.active = true;
         marketProduct.price = createProductDto.price;
@@ -63,6 +70,12 @@ export class ProductService {
           .into(ProductCategory)
           .values(productCategory)
           .execute();
+        
+        if(market && marketProduct) {
+          this.sendNotificationToClient(
+            market.neighborhood, createProductDto.categoryNames[i], marketProduct
+          );
+        }
       }
 
       return product;
@@ -70,6 +83,39 @@ export class ProductService {
       return err;
     }
   }
+
+  async sendNotificationToClient(
+    neighborhood: string,
+    category: string,
+    marketProduct: MarketProduct
+  ) {
+    const queryRunner = AppDataSource.createQueryRunner();
+    const query =
+    `
+    SELECT DISTINCT client.name, client.email
+    FROM "clientNotification" client_notif
+    LEFT JOIN client ON client.id = client_notif."clientId"
+    LEFT JOIN category cat ON cat.id = client_notif."categoryId"
+    WHERE cat.name = $1
+    AND client_notif.neighborhood = $2
+    AND client_notif."createdAt" < NOW() + INTERVAL '1 day'
+    `;
+
+    const clientsToNotify = await queryRunner.query(query, [category, neighborhood]);
+
+    const notificationDto = new NotificationDto();
+    notificationDto.isMarket = false;
+    notificationDto.category = category;
+    notificationDto.userData = clientsToNotify;
+    notificationDto.marketProduct = {
+      price: marketProduct.price,
+      quantity: marketProduct.quantity,
+      productName: marketProduct.product.name,
+      marketName: marketProduct.market.name,
+    }
+
+    this.notificationService.sendNotification(notificationDto);
+}
 
   async createProductCategory(createProductCategoryDto: CreateProductCategoryDto) {
     const product = await checkIfProductExists(createProductCategoryDto.productId);
