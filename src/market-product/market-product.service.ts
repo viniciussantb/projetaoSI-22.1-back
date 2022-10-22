@@ -159,12 +159,13 @@ export class MarketProductService {
   }
 
   async sendNotificationToMarket(neighborhood: string, categoryName: string) {
-    const markets = await AppDataSource
-      .createQueryBuilder()
-      .select(['m.email', 'm.ownerName as name'])
-      .from(Market, 'm')
-      .where('m.neighborhood=:neighborhood', { neighborhood })
-      .getMany();
+    const queryRunner = AppDataSource.createQueryRunner();
+    const query = `
+    SELECT mar.email, mar."ownerName" as name
+    FROM market mar
+    WHERE mar.neighborhood = $1;
+    `;
+    const markets = await queryRunner.query(query, [neighborhood]);
 
     const notificationDto = new NotificationDto();
     notificationDto.category = categoryName;
