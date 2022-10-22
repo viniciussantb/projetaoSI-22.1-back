@@ -4,6 +4,7 @@ import { CreateMarketProductDto } from './dto/create-market-product.dto';
 import { UpdateMarketProductDto } from './dto/update-market-product.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { CreatePriceAlertDto } from './dto/create-price-alert.dto';
 
 @ApiTags('Market-Product')
 @Controller('market-product')
@@ -22,6 +23,11 @@ export class MarketProductController {
     }
 
     return res.status(200).send({ message: marketProduct });
+  }
+
+  @Post('/price-alert')
+  async priceAlert(@Body() createPriceAlertDto: CreatePriceAlertDto) {
+    return this.marketProductService.createPriceAlert(createPriceAlertDto);
   }
 
   @Get('/findFiltered')

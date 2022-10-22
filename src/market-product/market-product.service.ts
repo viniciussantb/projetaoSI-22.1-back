@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMarketProductDto } from './dto/create-market-product.dto';
 import { UpdateMarketProductDto } from './dto/update-market-product.dto';
-import { checkIfMarketExists, checkIfProductExists } from '../utils/checkIfEntityExists';
+import { checkIfCategoryExists, checkIfMarketExists, checkIfProductExists } from '../utils/checkIfEntityExists';
 import { MarketProduct } from './entities/market-product.entity';
 import { AppDataSource } from '../app.data-source';
 import { ProductSelectionLog } from '../product-selection-log/entities/product-selection-log.entity';
@@ -13,6 +13,7 @@ import { ClientNotification } from '../notification/entities/clientNotification.
 import { Client } from '../client/entities/client.entity';
 import { NotificationDto } from '../notification/dto/notification.dto';
 import { NotificationService } from '../notification/notification.service';
+import { CreatePriceAlertDto } from './dto/create-price-alert.dto';
 
 @Injectable()
 export class MarketProductService {
@@ -66,6 +67,32 @@ export class MarketProductService {
     .leftJoinAndSelect('mp.market', 'm')
     .leftJoinAndSelect('mp.product', 'p')
     .getMany();
+  }
+
+  async createPriceAlert(createPriceAlert: CreatePriceAlertDto) {
+
+    const client = await checkIfClientExists(createPriceAlert.clientId);
+
+    createPriceAlert.category.forEach(async categoryName => {      
+      const category = await AppDataSource 
+      .createQueryBuilder()
+      .select('c')
+      .from(Category, 'c')
+      .where('LOWER(c.name)=LOWER(:categoryName)', { categoryName })
+      .getOne();
+  
+      const priceAlert = new ClientNotification();
+      priceAlert.active = true;
+      priceAlert.category = category;
+      priceAlert.client = client;
+      priceAlert.neighborhood = createPriceAlert.neighborhood;
+
+      await AppDataSource.createQueryBuilder()
+        .insert()
+        .into(ClientNotification)
+        .values(priceAlert)
+        .execute();
+    });
   }
 
   async countProductLogs(categoryName: string, neighborhood: string) {
