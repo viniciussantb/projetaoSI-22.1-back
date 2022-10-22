@@ -36,6 +36,8 @@ export class ProductService {
         marketProduct.price = createProductDto.price;
         marketProduct.product = product;
         marketProduct.quantity = createProductDto.quantity;
+        marketProduct.boosted = true;
+
 
         await AppDataSource.createQueryBuilder()
           .insert()
